@@ -1,60 +1,116 @@
-# Naivechain - a blockchain implementation in 200 lines of code
+# Naivechain
 
-### Motivation
-All the current implementations of blockchains are tightly coupled with the larger context and problems they (e.g. Bitcoin or Ethereum) are trying to solve. This makes understanding blockchains a necessarily harder task, than it must be. Especially source-code-wisely. This project is an attempt to provide as concise and simple implementation of a blockchain as possible.
+> 200줄의 코드로 구현한 블록체인
 
- 
-### What is blockchain
-[From Wikipedia](https://en.wikipedia.org/wiki/Blockchain_(database)) : Blockchain is a distributed database that maintains a continuously-growing list of records called blocks secured from tampering and revision.
+## Start with Docker
 
-### Key concepts of Naivechain
-Check also [this blog post](https://medium.com/@lhartikk/a-blockchain-in-200-lines-of-code-963cc1cc0e54#.dttbm9afr5) for a more detailed overview of the key concepts
-* HTTP interface to control the node
-* Use Websockets to communicate with other nodes (P2P)
-* Super simple "protocols" in P2P communication
-* Data is not persisted in nodes
-* No proof-of-work or proof-of-stake: a block can be added to the blockchain without competition
+- 테스트 환경: Ubuntu Server 14.04 LTS (AWS EC2)
 
+### Prerequisites
 
-![alt tag](naivechain_blockchain.png)
+- Docker Engine
+- Docker Compose
 
-![alt tag](naivechain_components.png)
+### Install Docker Engine
 
-
-### Naivecoin
-For a more extensive tutorial about blockchains, you can check the project [Naivecoin](https://lhartikk.github.io/). It is based on Naivechain and implements for instance Proof-of-work, transactions and wallets.
-
-### Quick start
-(set up two connected nodes and mine 1 block)
-```
-npm install
-HTTP_PORT=3001 P2P_PORT=6001 npm start
-HTTP_PORT=3002 P2P_PORT=6002 PEERS=ws://localhost:6001 npm start
-curl -H "Content-type:application/json" --data '{"data" : "Some data to the first block"}' http://localhost:3001/mineBlock
-```
-
-### Quick start with Docker
-(set up three connected nodes and mine a block)
-###
 ```sh
-docker-compose up
-curl -H "Content-type:application/json" --data '{"data" : "Some data to the first block"}' http://localhost:3001/mineBlock
+# 패키지 업데이트
+$ sudo apt-get update
+# 필요한 패키지 설치
+$ sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+# Docker GPG Key 추가
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+$ sudo apt-key fingerprint 0EBFCD88
+# Docker stable repository 추가
+$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && sudo apt-get update
+## Docker CE(community edition) 설치
+$ sudo apt-get install docker-ce
 ```
 
-### HTTP API
-##### Get blockchain
+### Install Docker Compose
+
+```sh
+# docker-compose 설치
+$ sudo curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+# 실행권한 부여
+$ sudo chmod +x /usr/local/bin/docker-compose
 ```
-curl http://localhost:3001/blocks
+
+### Run Naivechain Nodes
+
+```sh
+# 3개의 노드를 실행/연결한다.
+$ sudo docker-compose up -d
+Starting naivechain_node1_1 ... done
+Starting naivechain_node2_1 ... done
+Starting naivechain_node3_1 ... done
+...
 ```
-##### Create block
+
+## Start with NPM
+
+### Prerequisites
+
+- npm
+- node
+- (optional) nvm
+
+### Install Module
+
+```sh
+# package.json에 정의된 의존성 모듈 설치
+$ npm install
+npm notice created a lockfile as package-lock.json. You should commit this file.
+npm WARN naivechain@1.0.0 No repository field.
+npm WARN naivechain@1.0.0 No license field.
 ```
-curl -H "Content-type:application/json" --data '{"data" : "Some data to the first block"}' http://localhost:3001/mineBlock
-``` 
-##### Add peer
+
+### Run Naivechain Nodes
+
+- Node #1
+
+```sh
+# 첫 번째 노드 실행
+$ HTTP_PORT=3001 P2P_PORT=6001 npm start
+
+> naivechain@1.0.0 start /home/ubuntu/app/naivechain
+> node main.js
+
+listening websocket p2p port on: 6001
+Listening http on port: 3001
 ```
-curl -H "Content-type:application/json" --data '{"peer" : "ws://localhost:6001"}' http://localhost:3001/addPeer
+
+- Node #2
+
+```sh
+# 두 번째 노드 실행
+$ HTTP_PORT=3002 P2P_PORT=6002 PEERS=ws://localhost:6001 npm start
+
+> naivechain@1.0.0 start /home/ubuntu/app/naivechain
+> node main.js
+
+listening websocket p2p port on: 6002
+Listening http on port: 3002
+Received message{"type":0}
+Received message{"type":2,"data":"[{\"index\":0,\"previousHash\":\"0\",\"timestamp\":1465154705,\"data\":\"my genesis block!!\",\"hash\":\"816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7\"}]"}
 ```
-#### Query connected peers
+
+## API
+
+### 현재 블록 확인
+
+```sh
+$ curl http://localhost:3001/blocks
+[{"index":0,"previousHash":"0","timestamp":1465154705,"data":"my genesis block!!","hash":"816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7"}]
 ```
-curl http://localhost:3001/peers
+
+### 블록 생성
+
+```sh
+$ curl -H "Content-type:application/json" --data '{"data" : "블럭 생성"}' http://localhost:3001/mineBlock
 ```
+
+## References
+
+- [Get Docker CE for Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+- [Install Docker Compose](https://docs.docker.com/compose/install/)
